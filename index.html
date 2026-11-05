@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="HTML">
+<meta name="theme-color" content="#ffffff">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-180.png">
+<title>HTML ビューアー</title>
+<style>
+  :root { color-scheme: light dark; --line: #8884; --accent: #2563eb; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; font-family: -apple-system, system-ui, sans-serif; }
+  body { display: flex; flex-direction: column; }
+  header {
+    display: flex; align-items: center; gap: 8px;
+    padding: calc(env(safe-area-inset-top) + 8px) 12px 8px;
+    border-bottom: 1px solid var(--line);
+  }
+  header h1 { flex: 1; margin: 0; font-size: 17px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  button, label.btn {
+    font: inherit; font-size: 16px; padding: 8px 14px; border-radius: 10px;
+    border: 0; background: var(--accent); color: #fff; cursor: pointer;
+  }
+  button.plain { background: transparent; color: var(--accent); padding: 8px 4px; }
+  #list { flex: 1; overflow: auto; margin: 0; padding: 0 0 env(safe-area-inset-bottom); list-style: none; }
+  #list li { display: flex; align-items: center; border-bottom: 1px solid var(--line); }
+  #list li > button.open {
+    flex: 1; text-align: left; background: none; color: inherit; border-radius: 0; padding: 14px 16px;
+  }
+  #list .name { display: block; font-size: 16px; word-break: break-all; }
+  #list .meta { display: block; font-size: 13px; opacity: .6; margin-top: 2px; }
+  #list li > button.del { background: none; color: #dc2626; font-size: 14px; }
+  #empty { padding: 32px 16px; opacity: .6; line-height: 1.7; }
+  #frame { flex: 1; width: 100%; border: 0; background: #fff; }
+  [hidden] { display: none !important; }
+  input[type=file] { display: none; }
+</style>
+</head>
+<body>
+  <header>
+    <button id="back" class="plain" hidden>‹ 一覧</button>
+    <h1 id="title">HTML ビューアー</h1>
+    <label class="btn" id="openBtn">開く<input id="file" type="file" accept=".html,.htm,text/html"></label>
+  </header>
+  <ul id="list"></ul>
+  <p id="empty" hidden>右上の「開く」から HTML ファイルを選んでください。<br>開いたファイルはこの端末の中だけに保存され、ここに並びます。</p>
+  <iframe id="frame" hidden sandbox="allow-scripts allow-popups allow-forms allow-modals"></iframe>
+<script src="app.js"></script>
+</body>
+</html>

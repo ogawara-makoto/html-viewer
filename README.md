@@ -6,6 +6,7 @@ iPhone・iPad で、手元の HTML ファイルを CSS と JavaScript ごと表�
 - 開いたファイルは端末の中（IndexedDB）にだけ保存し、どこにも送らない。最近の 30 件を一覧に残す。
 - 表示は `sandbox` 付きの iframe（`allow-same-origin` なし）で、表示した HTML のスクリプトはビューアーの保存領域に触れない。
 - 依存なし・ビルドなし。`index.html`・`app.js`・`sw.js`・`manifest.webmanifest`・アイコンだけ。
+- 検索エンジンに載せない印（`<meta name="robots" content="noindex, nofollow">`）を入れている。
 - 本体を直したら `sw.js` の `VERSION` を上げる。
 
 制限: 1 ファイルで完結する HTML 向け。別ファイルの画像や CSS を相対パスで参照するページは、その部分が表示されない。

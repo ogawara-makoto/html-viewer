@@ -6,50 +6,126 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="HTML">
-<meta name="theme-color" content="#ffffff">
+<meta name="theme-color" content="#fafaf9" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#171a19" media="(prefers-color-scheme: dark)">
 <meta name="robots" content="noindex, nofollow">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
 <title>HTML ビューアー</title>
 <style>
-  :root { color-scheme: light dark; --line: #8884; --accent: #2563eb; }
+  /* 色と書体はハンドブックの型（run-talk-report の handbook.css）に合わせる */
+  :root {
+    --paper: #fafaf9; --surface: #ffffff; --surface-soft: #f5f6f4; --ink: #26372f; --sub: #5f6e66; --faint: #647069;
+    --rule: #e7e8e4; --rule-strong: #d6d8d3; --accent: #3c4d94; --tint: #eceffa; --hover: #f0f1ee; --risk: #9a4a3f;
+    --shadow: 0 1px 2px rgb(20 32 24 / .05), 0 12px 32px -20px rgb(20 32 24 / .28);
+    --radius: 14px; --radius-s: 10px;
+    --font-body: -apple-system, BlinkMacSystemFont, "Hiragino Kaku Gothic ProN", "Hiragino Sans", "Noto Sans JP", sans-serif;
+    --font-display: "Hiragino Mincho ProN", "Yu Mincho", "Noto Serif JP", serif;
+    --ease: cubic-bezier(.2,.7,.2,1);
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --paper: #171a19; --surface: #202423; --surface-soft: #282d2b; --ink: #e6ece8; --sub: #a0aaa4; --faint: #959f99;
+      --rule: #303a35; --rule-strong: #3a4540; --accent: #b1bfff; --tint: #2c3654; --hover: #303934; --risk: #efb0a1;
+      --shadow: 0 1px 2px rgb(0 0 0 / .3), 0 12px 32px -20px rgb(0 0 0 / .7);
+      color-scheme: dark;
+    }
+  }
   * { box-sizing: border-box; }
-  html, body { margin: 0; height: 100%; font-family: -apple-system, system-ui, sans-serif; }
-  body { display: flex; flex-direction: column; }
-  header {
-    display: flex; align-items: center; gap: 8px;
-    padding: calc(env(safe-area-inset-top) + 8px) 12px 8px;
-    border-bottom: 1px solid var(--line);
+  html, body { margin: 0; height: 100%; }
+  body {
+    display: flex; flex-direction: column; background: var(--paper); color: var(--ink);
+    font: 1.0625rem/1.95 var(--font-body); letter-spacing: .015em; -webkit-text-size-adjust: 100%;
   }
-  header h1 { flex: 1; margin: 0; font-size: 17px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  button, label.btn {
-    font: inherit; font-size: 16px; padding: 8px 14px; border-radius: 10px;
-    border: 0; background: var(--accent); color: #fff; cursor: pointer;
+  button { font: inherit; color: inherit; cursor: pointer; }
+  button:focus-visible, label:focus-within { outline: 3px solid var(--accent); outline-offset: 2px; }
+
+  /* 上部バー：半透明の地にぼかし */
+  .topbar {
+    position: sticky; top: 0; z-index: 10; flex: none;
+    display: flex; align-items: center; gap: .5rem;
+    padding: env(safe-area-inset-top) max(16px, env(safe-area-inset-right)) 0 max(16px, env(safe-area-inset-left));
+    min-height: calc(52px + env(safe-area-inset-top));
+    background: color-mix(in srgb, var(--paper) 86%, transparent);
+    -webkit-backdrop-filter: saturate(1.4) blur(12px); backdrop-filter: saturate(1.4) blur(12px);
+    border-bottom: 1px solid var(--rule);
   }
-  button.plain { background: transparent; color: var(--accent); padding: 8px 4px; }
-  #list { flex: 1; overflow: auto; margin: 0; padding: 0 0 env(safe-area-inset-bottom); list-style: none; }
-  #list li { display: flex; align-items: center; border-bottom: 1px solid var(--line); }
-  #list li > button.open {
-    flex: 1; text-align: left; background: none; color: inherit; border-radius: 0; padding: 14px 16px;
+  .brand { flex: 1; min-width: 0; margin: 0; font-size: .86rem; font-weight: 650; letter-spacing: .02em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .back {
+    display: inline-flex; align-items: center; gap: .25rem; padding: .35rem .7rem .35rem .5rem;
+    border: 1px solid var(--rule-strong); border-radius: var(--radius-s); background: var(--surface-soft);
+    font-size: .86rem; font-weight: 600;
   }
-  #list .name { display: block; font-size: 16px; word-break: break-all; }
-  #list .meta { display: block; font-size: 13px; opacity: .6; margin-top: 2px; }
-  #list li > button.del { background: none; color: #dc2626; font-size: 14px; }
-  #empty { padding: 32px 16px; opacity: .6; line-height: 1.7; }
+  .back svg { width: 16px; height: 16px; fill: none; stroke: currentcolor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .open-btn {
+    display: inline-flex; align-items: center; gap: .4rem; padding: .45rem .95rem;
+    border-radius: var(--radius-s); background: var(--accent); color: var(--surface);
+    font-size: .9rem; font-weight: 650; letter-spacing: .04em; cursor: pointer;
+  }
+  .open-btn svg { width: 16px; height: 16px; fill: none; stroke: currentcolor; stroke-width: 2.2; stroke-linecap: round; }
+  input[type=file] { position: absolute; width: 1px; height: 1px; opacity: 0; }
+
+  /* 一覧の画面 */
+  #home { flex: 1; overflow: auto; padding: 0 max(18px, env(safe-area-inset-right)) calc(2.5rem + env(safe-area-inset-bottom)) max(18px, env(safe-area-inset-left)); }
+  .inner { max-width: 44rem; margin: 0 auto; }
+  .masthead { padding: 2.4rem 0 1.6rem; }
+  .meta { margin: 0 0 .9rem; padding: 0; list-style: none; display: flex; flex-wrap: wrap; gap: 0 1rem; font-size: .8125rem; line-height: 1.7; color: var(--faint); }
+  .meta li:first-child { color: var(--ink); font-weight: 600; }
+  .masthead h1 { margin: 0; font: 600 2rem/1.36 var(--font-display); letter-spacing: .015em; font-feature-settings: "palt" 1; white-space: nowrap; }
+  .lede { margin: 1rem 0 0; color: var(--sub); font-size: .9375rem; line-height: 1.9; }
+  .masthead > * { opacity: 0; transform: translateY(.3em); animation: rise .7s var(--ease) forwards; }
+  .masthead > :nth-child(2) { animation-delay: .06s; }
+  .masthead > :nth-child(3) { animation-delay: .14s; }
+  @keyframes rise { to { opacity: 1; transform: none; } }
+
+  .label { display: flex; align-items: center; gap: .5rem; margin: .4rem 0 .8rem; font-size: .8rem; font-weight: 700; letter-spacing: .04em; color: var(--sub); }
+  .label::before { content: ""; width: .5rem; height: .5rem; border-radius: 50%; background: var(--accent); }
+  .label .count { margin-left: auto; font-weight: 500; color: var(--faint); font-variant-numeric: tabular-nums; }
+
+  #list { margin: 0; padding: 0; list-style: none; display: grid; gap: .7rem; }
+  #list li { display: flex; align-items: stretch; background: var(--surface); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; }
+  #list .open { flex: 1; min-width: 0; padding: .95rem 1.15rem; border: 0; background: none; text-align: left; transition: background-color .15s; }
+  #list .open:active, #list .open:hover { background: var(--hover); }
+  #list .name { display: block; font-size: 1rem; font-weight: 600; line-height: 1.55; word-break: break-all; }
+  #list .info { display: block; margin-top: .2rem; font-size: .8rem; line-height: 1.6; color: var(--faint); font-variant-numeric: tabular-nums; }
+  #list .del { flex: none; padding: 0 1rem; border: 0; border-left: 1px solid var(--rule); background: none; color: var(--faint); font-size: .8rem; transition: color .15s; }
+  #list .del:hover, #list .del:focus-visible { color: var(--risk); }
+
+  #empty { padding: 1.4rem 1.35rem; border: 1.5px dashed var(--rule-strong); border-radius: var(--radius); color: var(--sub); font-size: .9375rem; line-height: 1.9; }
+  #empty ol { margin: .4rem 0 0; padding-left: 1.3rem; }
+
+  /* 表示の画面 */
   #frame { flex: 1; width: 100%; border: 0; background: #fff; }
+
   [hidden] { display: none !important; }
-  input[type=file] { display: none; }
+  @media (prefers-reduced-motion: reduce) { .masthead > * { animation: none; opacity: 1; transform: none; } }
 </style>
 </head>
 <body>
-  <header>
-    <button id="back" class="plain" hidden>‹ 一覧</button>
-    <h1 id="title">HTML ビューアー</h1>
-    <label class="btn" id="openBtn">開く<input id="file" type="file" accept=".html,.htm,text/html"></label>
+  <header class="topbar">
+    <button id="back" class="back" hidden aria-label="一覧へ戻る"><svg viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg>一覧</button>
+    <p id="title" class="brand">HTML ビューアー</p>
+    <label class="open-btn" id="openBtn"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>開く<input id="file" type="file" accept=".html,.htm,text/html"></label>
   </header>
-  <ul id="list"></ul>
-  <p id="empty" hidden>右上の「開く」から HTML ファイルを選んでください。<br>開いたファイルはこの端末の中だけに保存され、ここに並びます。</p>
-  <iframe id="frame" hidden sandbox="allow-scripts allow-popups allow-forms allow-modals"></iframe>
+
+  <main id="home">
+    <div class="inner">
+      <section class="masthead">
+        <ul class="meta"><li>手元の HTML を読む</li><li>端末の中だけに保存</li><li>オフラインで動く</li></ul>
+        <h1>HTML ビューアー</h1>
+        <p class="lede">iCloud Drive などから HTML を選ぶと、見た目も動きもそのまま表示します。開いたファイルはここに並び、次からは選び直さずに読めます。</p>
+      </section>
+
+      <p class="label" id="listLabel">最近開いたもの<span class="count" id="count"></span></p>
+      <ul id="list"></ul>
+      <div id="empty" hidden>
+        まだ何も開いていません。
+        <ol><li>右上の「開く」を押す</li><li>iCloud Drive →「Claude」などから HTML を選ぶ</li></ol>
+      </div>
+    </div>
+  </main>
+
 <script src="app.js"></script>
 </body>
 </html>

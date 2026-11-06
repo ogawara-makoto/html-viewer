@@ -2,7 +2,7 @@
 
 // ビューアー本体だけを端末に保存し、電波が無くても開けるようにする。
 // 本体を直したら VERSION を上げる。
-const VERSION = 'v1';
+const VERSION = 'v2';
 const SHELL = ['./', 'index.html', 'app.js', 'manifest.webmanifest', 'icon-180.png', 'icon-512.png'];
 
 self.addEventListener('install', (e) => {

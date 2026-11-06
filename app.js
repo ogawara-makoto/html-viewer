@@ -6,7 +6,8 @@ const STORE = 'files';
 const KEEP = 30;
 
 const $ = (id) => document.getElementById(id);
-const list = $('list'), empty = $('empty'), frame = $('frame');
+const home = $('home'), list = $('list'), empty = $('empty');
+const listLabel = $('listLabel'), count = $('count');
 const back = $('back'), title = $('title'), openBtn = $('openBtn'), fileInput = $('file');
 
 const dbReady = new Promise((resolve, reject) => {
@@ -47,8 +48,8 @@ function fmtSize(n) {
 }
 
 async function showList() {
-  frame.hidden = true;
-  frame.removeAttribute('srcdoc');
+  document.getElementById('frame')?.remove();
+  home.hidden = false;
   back.hidden = true;
   openBtn.hidden = false;
   title.textContent = 'HTML ビューアー';
@@ -61,7 +62,7 @@ async function showList() {
     name.className = 'name';
     name.textContent = rec.name;
     const meta = document.createElement('span');
-    meta.className = 'meta';
+    meta.className = 'info';
     meta.textContent = `${fmtDate(rec.openedAt)} · ${fmtSize(rec.size)}`;
     open.append(name, meta);
     open.onclick = () => view(rec);
@@ -72,22 +73,26 @@ async function showList() {
     li.append(open, rm);
     return li;
   }));
-  list.hidden = all.length === 0;
+  list.hidden = listLabel.hidden = all.length === 0;
   empty.hidden = all.length !== 0;
+  count.textContent = `${all.length} 件`;
 }
 
 async function view(rec) {
   rec.openedAt = Date.now();
   await put(rec);
-  list.hidden = true;
-  empty.hidden = true;
+  home.hidden = true;
   openBtn.hidden = true;
   back.hidden = false;
   title.textContent = rec.name;
+  // 表示のたびに iframe を作り直す（中身の差し替えはブラウザの戻る履歴を増やすため）。
   // sandbox に allow-same-origin を付けないので、レポートの JS はビューアーの保存領域に触れない。
+  const frame = document.createElement('iframe');
+  frame.id = 'frame';
+  frame.title = '表示中のページ';
+  frame.setAttribute('sandbox', 'allow-scripts allow-popups allow-forms allow-modals');
   frame.srcdoc = rec.html;
-  frame.hidden = false;
-  history.pushState({ viewing: rec.name }, '');
+  document.body.append(frame);
 }
 
 fileInput.onchange = async () => {
@@ -101,8 +106,7 @@ fileInput.onchange = async () => {
   view(rec);
 };
 
-back.onclick = () => history.back();
-window.onpopstate = () => showList();
+back.onclick = () => showList();
 
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
 

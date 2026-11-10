@@ -13,7 +13,7 @@
 <link rel="apple-touch-icon" href="icon-180.png">
 <title>HTML ビューアー</title>
 <style>
-  /* 色と書体はハンドブックの型（run-talk-report の handbook.css）に合わせる */
+  /* 色と書体の定義 */
   :root {
     --paper: #fafaf9; --surface: #ffffff; --surface-soft: #f5f6f4; --ink: #26372f; --sub: #5f6e66; --faint: #647069;
     --rule: #e7e8e4; --rule-strong: #d6d8d3; --accent: #3c4d94; --tint: #eceffa; --hover: #f0f1ee; --risk: #9a4a3f;
@@ -25,12 +25,18 @@
     color-scheme: light;
   }
   @media (prefers-color-scheme: dark) {
-    :root {
+    :root:not([data-theme="light"]) {
       --paper: #171a19; --surface: #202423; --surface-soft: #282d2b; --ink: #e6ece8; --sub: #a0aaa4; --faint: #959f99;
       --rule: #303a35; --rule-strong: #3a4540; --accent: #b1bfff; --tint: #2c3654; --hover: #303934; --risk: #efb0a1;
       --shadow: 0 1px 2px rgb(0 0 0 / .3), 0 12px 32px -20px rgb(0 0 0 / .7);
       color-scheme: dark;
     }
+  }
+  :root[data-theme="dark"] {
+      --paper: #171a19; --surface: #202423; --surface-soft: #282d2b; --ink: #e6ece8; --sub: #a0aaa4; --faint: #959f99;
+      --rule: #303a35; --rule-strong: #3a4540; --accent: #b1bfff; --tint: #2c3654; --hover: #303934; --risk: #efb0a1;
+      --shadow: 0 1px 2px rgb(0 0 0 / .3), 0 12px 32px -20px rgb(0 0 0 / .7);
+      color-scheme: dark;
   }
   * { box-sizing: border-box; }
   html, body { margin: 0; height: 100%; }
@@ -52,77 +58,67 @@
     border-bottom: 1px solid var(--rule);
   }
   .brand { flex: 1; min-width: 0; margin: 0; font-size: .86rem; font-weight: 650; letter-spacing: .02em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .back {
-    display: inline-flex; align-items: center; gap: .25rem; padding: .35rem .7rem .35rem .5rem;
-    border: 1px solid var(--rule-strong); border-radius: var(--radius-s); background: var(--surface-soft);
-    font-size: .86rem; font-weight: 600;
+  .icon-btn {
+    flex: none; width: 40px; height: 40px; padding: 0; display: inline-grid; place-items: center; cursor: pointer;
+    border: 1px solid var(--rule-strong); border-radius: 50%; background: var(--surface-soft); color: var(--ink);
   }
-  .back svg { width: 16px; height: 16px; fill: none; stroke: currentcolor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-  .open-btn {
-    display: inline-flex; align-items: center; gap: .4rem; padding: .45rem .95rem;
-    border-radius: var(--radius-s); background: var(--accent); color: var(--surface);
-    font-size: .9rem; font-weight: 650; letter-spacing: .04em; cursor: pointer;
-  }
-  .open-btn svg { width: 16px; height: 16px; fill: none; stroke: currentcolor; stroke-width: 2.2; stroke-linecap: round; }
+  .icon-btn.primary { border-color: var(--accent); background: var(--accent); color: var(--surface); }
+  .icon-btn.ghost { border-color: transparent; background: none; color: var(--faint); }
+  .icon-btn svg { width: 20px; height: 20px; fill: none; stroke: currentcolor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
   input[type=file] { position: absolute; width: 1px; height: 1px; opacity: 0; }
 
   /* 一覧の画面 */
-  #home { flex: 1; overflow: auto; padding: 0 max(18px, env(safe-area-inset-right)) calc(2.5rem + env(safe-area-inset-bottom)) max(18px, env(safe-area-inset-left)); }
+  #home { flex: 1; overflow: auto; padding: 1rem max(18px, env(safe-area-inset-right)) calc(2.5rem + env(safe-area-inset-bottom)) max(18px, env(safe-area-inset-left)); }
   .inner { max-width: 44rem; margin: 0 auto; }
-  .masthead { padding: 2.4rem 0 1.6rem; }
-  .meta { margin: 0 0 .9rem; padding: 0; list-style: none; display: flex; flex-wrap: wrap; gap: 0 1rem; font-size: .8125rem; line-height: 1.7; color: var(--faint); }
-  .meta li:first-child { color: var(--ink); font-weight: 600; }
-  .masthead h1 { margin: 0; font: 600 2rem/1.36 var(--font-display); letter-spacing: .015em; font-feature-settings: "palt" 1; white-space: nowrap; }
-  .lede { margin: 1rem 0 0; color: var(--sub); font-size: .9375rem; line-height: 1.9; }
-  .masthead > * { opacity: 0; transform: translateY(.3em); animation: rise .7s var(--ease) forwards; }
-  .masthead > :nth-child(2) { animation-delay: .06s; }
-  .masthead > :nth-child(3) { animation-delay: .14s; }
-  @keyframes rise { to { opacity: 1; transform: none; } }
-
-  .label { display: flex; align-items: center; gap: .5rem; margin: .4rem 0 .8rem; font-size: .8rem; font-weight: 700; letter-spacing: .04em; color: var(--sub); }
-  .label::before { content: ""; width: .5rem; height: .5rem; border-radius: 50%; background: var(--accent); }
-  .label .count { margin-left: auto; font-weight: 500; color: var(--faint); font-variant-numeric: tabular-nums; }
-
   #list { margin: 0; padding: 0; list-style: none; display: grid; gap: .7rem; }
   #list li { display: flex; align-items: stretch; background: var(--surface); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; }
   #list .open { flex: 1; min-width: 0; padding: .95rem 1.15rem; border: 0; background: none; text-align: left; transition: background-color .15s; }
   #list .open:active, #list .open:hover { background: var(--hover); }
+  #list .kind { flex: none; width: 22px; height: 22px; margin-top: .15rem; color: var(--sub); fill: none; stroke: currentcolor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+  #list .kind.answer { color: var(--accent); }
+  #list .open { display: flex; gap: .75rem; align-items: flex-start; }
+  #list .text { min-width: 0; }
   #list .name { display: block; font-size: 1rem; font-weight: 600; line-height: 1.55; word-break: break-all; }
   #list .info { display: block; margin-top: .2rem; font-size: .8rem; line-height: 1.6; color: var(--faint); font-variant-numeric: tabular-nums; }
-  #list .del { flex: none; padding: 0 1rem; border: 0; border-left: 1px solid var(--rule); background: none; color: var(--faint); font-size: .8rem; transition: color .15s; }
+  #list .del { flex: none; width: 52px; display: grid; place-items: center; padding: 0; border: 0; border-left: 1px solid var(--rule); background: none; color: var(--faint); transition: color .15s; }
+  #list .del svg, #list .badge svg { width: 18px; height: 18px; fill: none; stroke: currentcolor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
   #list .del:hover, #list .del:focus-visible { color: var(--risk); }
 
-  #empty { padding: 1.4rem 1.35rem; border: 1.5px dashed var(--rule-strong); border-radius: var(--radius); color: var(--sub); font-size: .9375rem; line-height: 1.9; }
-  #empty ol { margin: .4rem 0 0; padding-left: 1.3rem; }
+  .empty { display: grid; place-items: center; height: 46vh; border: 1.5px dashed var(--rule-strong); border-radius: var(--radius); color: var(--faint); cursor: pointer; }
+  .empty svg { width: 56px; height: 56px; fill: none; stroke: currentcolor; stroke-width: 1.6; stroke-linecap: round; }
 
   /* 表示の画面 */
   #frame { flex: 1; width: 100%; border: 0; background: #fff; }
 
+  /* ページから届いた返事を保存する帯 */
+  #answerBar { flex: none; display: flex; align-items: center; gap: .6rem; padding: .55rem max(16px, env(safe-area-inset-right)) .55rem max(16px, env(safe-area-inset-left));
+    background: var(--tint); border-bottom: 1px solid var(--rule-strong); font-size: .9rem; line-height: 1.5; color: var(--accent); }
+  .bar-icon { width: 20px; height: 20px; flex: none; fill: none; stroke: currentcolor; stroke-width: 2; stroke-linejoin: round; }
+  #answerMsg { flex: 1; min-width: 0; }
+  #list .badge { margin-left: .45rem; color: var(--accent); vertical-align: -3px; }
+
   [hidden] { display: none !important; }
-  @media (prefers-reduced-motion: reduce) { .masthead > * { animation: none; opacity: 1; transform: none; } }
 </style>
 </head>
 <body>
   <header class="topbar">
-    <button id="back" class="back" hidden aria-label="一覧へ戻る"><svg viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg>一覧</button>
-    <p id="title" class="brand">HTML ビューアー</p>
-    <label class="open-btn" id="openBtn"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>開く<input id="file" type="file" accept=".html,.htm,text/html"></label>
+    <button id="back" class="icon-btn" hidden aria-label="一覧へ戻る"><svg viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
+    <p id="title" class="brand"></p>
+    <button id="themeBtn" class="icon-btn ghost" type="button" aria-label="表示: OS に合わせる"></button>
+    <label class="icon-btn primary" id="openBtn" aria-label="開く"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg><input id="file" type="file" accept=".html,.htm,text/html"></label>
   </header>
+
+  <div id="answerBar" role="status" hidden>
+    <svg class="bar-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"/></svg>
+    <span id="answerMsg"></span>
+    <button id="answerSave" class="icon-btn primary" type="button" aria-label="返事を保存"><svg viewBox="0 0 24 24"><path d="M12 15V4M7 9l5-5 5 5M5 14v5h14v-5"/></svg></button>
+    <button id="answerClose" class="icon-btn ghost" type="button" aria-label="帯を閉じる"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+  </div>
 
   <main id="home">
     <div class="inner">
-      <section class="masthead">
-        <ul class="meta"><li>手元の HTML を読む</li><li>端末の中だけに保存</li><li>オフラインで動く</li></ul>
-        <h1>HTML ビューアー</h1>
-        <p class="lede">iCloud Drive などから HTML を選ぶと、見た目も動きもそのまま表示します。開いたファイルはここに並び、次からは選び直さずに読めます。</p>
-      </section>
-
-      <p class="label" id="listLabel">最近開いたもの<span class="count" id="count"></span></p>
       <ul id="list"></ul>
-      <div id="empty" hidden>
-        まだ何も開いていません。
-        <ol><li>右上の「開く」を押す</li><li>iCloud Drive →「Claude」などから HTML を選ぶ</li></ol>
-      </div>
+      <label id="empty" class="empty" hidden aria-label="開く"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg><input id="file2" type="file" accept=".html,.htm,text/html"></label>
     </div>
   </main>
 
